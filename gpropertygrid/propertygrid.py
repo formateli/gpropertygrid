@@ -71,18 +71,10 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
             A :class:`PropertyGridGroup` object on which we can add properties.
         """
         group = PropertyGridGroup(group_title)
-        self.add_group(group)
-        return group
-
-    def add_group(self, group):
-        """Adds a PropertyGridGroup object to this PropertyGrid object.
-
-        Args:
-            group: A :class:`PropertyGridGroup` object.
-        """
         self._groups.append(group)
         group._grid = self
         self._groups_rows.pack_start(group, False, False, 0)
+        return group
 
     def get_property_by_id(self, id):
         """Finds and returns a PropertyGridProperty for given id.

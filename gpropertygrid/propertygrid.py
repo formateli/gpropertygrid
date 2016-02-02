@@ -33,10 +33,10 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         self._expanded = False
 
         event_box = Gtk.EventBox()
-        grid_header = Gtk.Label(xalign=0)
-        grid_header.set_name("property_grid_header")
-        grid_header.set_text(title)
-        event_box.add(grid_header)
+        self._grid_header = Gtk.Label(xalign=0)
+        self._grid_header.set_name("property_grid_header")
+        self._grid_header.set_text(title)
+        event_box.add(self._grid_header)
         event_box.connect("button-press-event", self._on_header_click, {})
         self.pack_start(event_box, False, False, 0)
 
@@ -59,6 +59,14 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         """
         return self._properties
 
+    def set_title(self, title):
+        """Sets the title for the property grid.
+
+        Args:
+            title (string): The title of the property grid.
+        """
+        self._grid_header.set_text(title)
+
     def create_group(self, group_title):
         """Create a new group of properties.
 
@@ -68,13 +76,21 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
             group_title (string): The title of the group.
 
         Returns:
-            A :class:`PropertyGridGroup` object on which we can add properties.
+            A :class:`PropertyGridGroup` object.
         """
         group = PropertyGridGroup(group_title)
         self._groups.append(group)
         group._grid = self
         self._groups_rows.pack_start(group, False, False, 0)
         return group
+
+    def remove_all_groups(self):
+        """Removes all groups from property grid.
+        """
+        for g in self._groups:
+            self._groups_rows.remove(g)
+        self._description.set_value('', '')
+        self._groups = []
 
     def get_property_by_id(self, id):
         """Finds and returns a PropertyGridProperty for given id.
@@ -83,14 +99,14 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
             id (string): The id of the PropertyGridProperty object fo find.
 
         Returns:
-            A PropertyGridGroup object. None if property is not found.
+            A PropertyGridProperty object. None if property is not found.
         """
         if not id in self._property_names:
             return
         return self._property_names[id]
 
     def set_expanded(self, expanded):
-        """Sets the state of the group.
+        """Sets the expanded state of the group.
 
         Args:
             expanded (boolean): If True, group expands to show its properties.
@@ -117,7 +133,9 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
             self._next_id += 1
         if property_.id in self._property_names:
             property_.value_widget.set_sensitive(False)
-            raise ValueError("Properpy with id {0} already exists in property grid".format(property_.id))
+            raise ValueError(
+                "Properpy with id {0} already exists in property grid".format(
+                    property_.id))
         self._properties.append(property_)
         self._property_names[property_.id] = property_
         group._properties.append(property_)

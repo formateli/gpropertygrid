@@ -2,18 +2,19 @@
 # The COPYRIGHT file at the top level of this repository
 # contains the full copyright notices and license terms.
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, Pango
 
 class PropertyGridProperty(Gtk.Paned):
-
-    def __init__(self, name, value_widget, id=None,
+    def __init__(self, name,
+                value_widget,
+                id=None,
                 default=None,
                 description=None,
                 force_value=False):
         """Main property class from where all property classes must derives.
 
         Args:
-            name: The name of the proeprty.
+            name: The name of the property.
 
             value_widget: The widget used for manages the property value.
 
@@ -23,49 +24,69 @@ class PropertyGridProperty(Gtk.Paned):
                 the property grid using the get_property_by_id function. 
                 Default None.
 
-            default: The default value for this property.
+            default: Optional. The default value for this property.
 
-            description: Optional. The property description.
-            
-            force_value: Optional. If True, default is asigned to the property value 
+            description (string): Optional. The property description.
+
+            force_value (boolean): Optional. If True, default is asigned to the property value 
                 at object creation time, otherwise value remains None until it changes by user.
         """
 
         super(PropertyGridProperty,
                 self).__init__(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self._group = None # PropertyGridGroup
         self.name = name
         self.id = id
-        self.default = default
-        self.value = None
         self.description = description
 
+        self._group = None
+        self._value = None
         self._curr_width = -1
         self._curr_position = -1
         self._has_focus = False
         self._read_only = False
 
         if force_value:
-            self.value = self.default
+            self._value = default
 
-        self.box_0 = Gtk.Box()
-        self.box_1 = Gtk.Box()
-        self.event_box_0 = None
-        self.event_box_1 = None
-        self.cell_0 = None
-        self.cell_1 = None
+        self._box_0 = Gtk.Box()
+        self._box_1 = Gtk.Box()
+        self._event_box_0 = None
+        self._event_box_1 = None
+        self._cell_0 = None
+        self._cell_1 = None
 
         self.pack1(self._get_cell(0), True, True)
         self.pack2(self._get_cell(1), True, True)
 
         self.connect("draw", self._on_draw)
-        self.cell_0.set_text(name)
+        self._cell_0.set_text(name)
+        self._cell_1.set_text(self.get_display_value())
         self.value_widget = value_widget
 
     @property
     def has_focus(self):
         return self._has_focus
+
+    @property
+    def value(self):
+        """
+        The current value of the property.
+        """
+        return self._value
+
+    def get_display_value(self):
+        """
+        Gets the current display value of the property.
+        
+        This method should not be called unless a
+        special string representation were needed, in this case
+        function must be overriden.
+        """
+        if self._value is None:
+            return '[No value]'
+        else:
+            return str(self._value)
 
     def has_changed(self):
         """Tells the property grid that the property Value has changed.
@@ -74,18 +95,7 @@ class PropertyGridProperty(Gtk.Paned):
         each time its value changes.
         """
         self._group._grid._property_changed(self)
-
-    def set_value_text(self, text):
-        """Sets the text to show in the value area of the row.
-
-        Args:
-            text: The text to show. 
-                This text is a representation of the current value of the property.
-        """
-        if not text:
-            self.cell_1.set_text("[No value]")
-        else:
-            self.cell_1.set_text(text)
+        self._cell_1.set_text(self.get_display_value())
 
     def set_read_only(self, readonly):
         """Sets ReadOnly state of the property.
@@ -94,25 +104,27 @@ class PropertyGridProperty(Gtk.Paned):
             readonly: Boolean value that sets the ReadOnly state.
         """
         self._read_only = readonly
-        self.cell_1.set_selectable(readonly)
+        self._cell_1.set_selectable(readonly)
 
     def on_change(self, data=None):
         return self._has_focus
 
     def _get_cell(self, cell_index):
         if cell_index == 0:
-            self.cell_0 = Gtk.Label(xalign=0)
-            self.event_box_0 = Gtk.EventBox()
-            cell = self.cell_0
-            ebox = self.event_box_0
-            box = self.box_0
+            self._cell_0 = Gtk.Label(xalign=0)
+            self._event_box_0 = Gtk.EventBox()
+            cell = self._cell_0
+            ebox = self._event_box_0
+            box = self._box_0
         else:
-            self.cell_1 = Gtk.Label(xalign=0)
-            self.event_box_1 = Gtk.EventBox()
-            cell = self.cell_1
-            ebox = self.event_box_1
-            box = self.box_1
-        cell.set_name("cell")
+            self._cell_1 = Gtk.Label(xalign=0)
+            self._cell_1.set_single_line_mode(True)
+            self._cell_1.set_ellipsize(Pango.EllipsizeMode.END)
+            self._event_box_1 = Gtk.EventBox()
+            cell = self._cell_1
+            ebox = self._event_box_1
+            box = self._box_1
+        cell.set_name("cell")        
         ebox.add(cell)
 
         ebox.connect("enter-notify-event", self._on_mouse_notify, 
@@ -123,7 +135,6 @@ class PropertyGridProperty(Gtk.Paned):
                      "type":"out"})
         ebox.connect("button-press-event", self._on_cell_click,
                                 {"index":cell_index})
-
         box.pack_start(ebox, True, True, 0)
         return box
 
@@ -133,9 +144,9 @@ class PropertyGridProperty(Gtk.Paned):
 
     def _change_cell_color(self, cell_index, data_type):
         if cell_index == 0:
-            cell = self.cell_0
+            cell = self._cell_0
         else:
-            cell = self.cell_1
+            cell = self._cell_1
         ctx = cell.get_style_context()
         if data_type == "in":
             ctx.add_class("cell_in")
@@ -163,15 +174,15 @@ class PropertyGridProperty(Gtk.Paned):
         if self._read_only:
             self._on_enter() # This way we force on_leave() on all other properties.
             return
-        curr_wg = self.box_1.get_children()[0]
+        curr_wg = self._box_1.get_children()[0]
         if self._has_focus:
-            new_wg = self.event_box_1
+            new_wg = self._event_box_1            
         else:
             new_wg = self.value_widget
 
-        self.box_1.remove(curr_wg)
-        self.box_1.pack_start(new_wg, True, True, 0)
-        self.box_1.show_all()
+        self._box_1.remove(curr_wg)
+        self._box_1.pack_start(new_wg, True, True, 0)
+        self._box_1.show_all()
         if not self._has_focus:
             new_wg.grab_focus()
             self._on_enter()
@@ -182,13 +193,13 @@ class PropertyGridProperty(Gtk.Paned):
 
 
 class PropertyString(PropertyGridProperty):
-
-    def __init__(self, name, id,
+    def __init__(self, name,
+                id=None,
                 default=None,
                 description=None,
                 force_value=False):
-        """A String property class. It uses the Gtk.Entry as a value widget.        
-        
+        """A String property class. It uses the Gtk.Entry as a value widget.
+
         See :class:`PropertyGridProperty` for parameters.
 
         Note:
@@ -197,17 +208,22 @@ class PropertyString(PropertyGridProperty):
         self._txt = Gtk.Entry()
         self._txt.connect("changed", self._on_txt_changed)
 
-        super(PropertyString, self).__init__(name=name, value_widget=self._txt,
-                id=id, default=default, description=description, force_value=force_value)
+        super(PropertyString, self).__init__(
+            name=name,
+            value_widget=self._txt,
+            id=id,
+            default=default,
+            description=description,
+            force_value=force_value)
 
-        self.set_value_text(default)
+        if default == None:
+            default = ''
         self._txt.set_text(default)
 
     def on_change(self):
         if not super(PropertyString, self).on_change():
             return False
-        self.value = self._txt.get_text()
-        self.set_value_text(self.value)
+        self._value = self._txt.get_text()
         self.has_changed()
         return True
 
@@ -217,7 +233,7 @@ class PropertyString(PropertyGridProperty):
 
 class PropertyBool(PropertyGridProperty):
 
-    def __init__(self, name, id, 
+    def __init__(self, name, id=None,
             default=None, description=None, force_value=False):
         """A Boolean property class. It uses the Gtk.Check as a value widget.
 
@@ -234,26 +250,15 @@ class PropertyBool(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
-        self._set_text(default)
         if default == True:
             self._check.set_active(True)
 
     def on_change(self):
         if not super(PropertyBool, self).on_change():
             return False
-        self.value = self._check.get_active()
-        self._set_text(self.value)
+        self._value = self._check.get_active()
         self.has_changed()
         return True
-
-    def _set_text(self, value):
-        if value == None:
-            self.set_value_text(None)
-        else:
-            if value == True:
-                self.set_value_text("True")
-            else:
-                self.set_value_text("False")
 
     def _on_toggled(self, wg):
         self.on_change()
@@ -265,7 +270,7 @@ class PropertyColor(PropertyGridProperty):
     Uses the Gtk.ColorButton as a value widget.
     value is a Gdk.RGBA object or None.
     """
-    def __init__(self, name, id, 
+    def __init__(self, name, id=None,
             default=None, description=None, force_value=False):
         """A Color property class. It uses the Gtk.ColorButton as a value widget.
 
@@ -288,12 +293,15 @@ class PropertyColor(PropertyGridProperty):
         self._buttom.connect("color_set", self._on_toggled)
 
         hbox.pack_start(self._buttom, True, True, 0)
-        hbox.pack_start(self._txt, True, True, 0)        
+        hbox.pack_start(self._txt, True, True, 0)
         
-        super(PropertyColor, self).__init__(name=name, value_widget=hbox,
-                id=id, default=default, description=description, force_value=force_value)
-
-        self.set_value_text(default)
+        super(PropertyColor, self).__init__(
+            name=name,
+            value_widget=hbox,
+            id=id,
+            default=default,
+            description=description,
+            force_value=force_value)
 
         color = self._get_color_from_str(default)
         if color:
@@ -309,16 +317,17 @@ class PropertyColor(PropertyGridProperty):
         color = self._get_color_from_str(self._txt.get_text())
         if color:
             self._buttom.set_rgba(color)
-            self.value = self._buttom.get_rgba()
+            self._value = self._buttom.get_rgba()
         else:
             self._buttom.set_rgba(Gdk.RGBA())
-            self.value = None
-        if self.value:
-            self.set_value_text(self._txt.get_text())
-        else:
-            self.set_value_text(None)
+            self._value = None
         self.has_changed()
         return True
+
+    def get_display_value(self):
+        if self._value is None:
+            return super(PropertyColor, self).get_display_value()
+        return self._txt.get_text()
 
     def _on_toggled(self, wg):
         self._txt.set_text(self._buttom.get_rgba().to_string())

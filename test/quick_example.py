@@ -55,6 +55,14 @@ class PropertyGridExample(Gtk.Window):
         str_readonly.set_read_only(True)
         group.add_property(str_readonly)
 
+        # A string with lines
+        str_lines = PropertyString(
+            name="String Lines",
+            id="str_lines",
+            default="Line 1\nLine 2\nLine 3",
+            description="This is the string with lines")
+        group.add_property(str_lines)
+
         # Other group
         other_group = pg.create_group("Other group")
 

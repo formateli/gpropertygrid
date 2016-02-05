@@ -119,7 +119,6 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         self.set_expanded(not self._expanded)
 
     def _property_changed(self, property_):
-        # Called only on PropertyGridProperty.has_changed function.
         self.emit("changed", property_)
 
     def _on_draw(self, wg, data):

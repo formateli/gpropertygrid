@@ -70,7 +70,7 @@ css = """
 
 #cell.cell_in {
     background-color: @pg_selected_bg_color;
-    color: @pg_selected_fg_color;    
+    color: @pg_selected_fg_color;
 }
 
 #description_name {

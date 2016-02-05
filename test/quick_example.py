@@ -78,8 +78,23 @@ class PropertyGridExample(Gtk.Window):
                     id="color",
                     description="This is a color property")
 
+        color_property2 = PropertyColor(
+                    name="Color 2",
+                    id="color2",
+                    default='red',
+                    description="This is a color property 2")
+
+        color_property3 = PropertyColor(
+                    name="Color 3",
+                    id="color3",
+                    default='green',
+                    force_value=True,
+                    description="This is a color property 3")
+
         other_group.add_property(bool_property)
         other_group.add_property(color_property)
+        other_group.add_property(color_property2)
+        other_group.add_property(color_property3)
 
         box.pack_start(pg, True, True, 0)
 

@@ -14,7 +14,8 @@ except NameError:
 
 from gi.repository import Gtk
 from gpropertygrid import PropertyGrid
-from gpropertygrid.properties import PropertyString, PropertyBool, PropertyColor
+from gpropertygrid.properties import PropertyString, \
+    PropertyBool, PropertyColor, PropertyList
 
 class PropertyGridExample(Gtk.Window):
     def __init__(self):
@@ -95,6 +96,29 @@ class PropertyGridExample(Gtk.Window):
         other_group.add_property(color_property)
         other_group.add_property(color_property2)
         other_group.add_property(color_property3)
+
+        list_values = [
+            ['0', 'Element 0'],
+            ['1', 'Element 1'],
+            ['2', 'Element 2'],
+            [None, 'Element 3'],
+            ['4', 'Element 4'],
+        ]
+
+        list_property1 = PropertyList(
+                    name="List 1",
+                    list_values=list_values,
+                    description="This is a list property 1")
+
+        list_property2 = PropertyList(
+                    name="List 2",
+                    list_values=list_values,
+                    default={'id': '2'},
+                    force_value=True,
+                    description="This is a list property 2 with default")
+
+        other_group.add_property(list_property1)
+        other_group.add_property(list_property2)
 
         box.pack_start(pg, True, True, 0)
 

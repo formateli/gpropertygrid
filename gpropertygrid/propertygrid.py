@@ -59,6 +59,14 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         """
         return self._properties
 
+    def get_title(self):
+        """Gets the current title of the property grid.
+
+        Returns:
+            The current title string of property grid.
+        """
+        return self._grid_header.get_text()
+
     def set_title(self, title):
         """Sets the title for the property grid.
 

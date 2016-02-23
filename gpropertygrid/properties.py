@@ -84,7 +84,6 @@ class PropertyGridProperty(Gtk.Paned):
 
             default: Default value to set if force_value is True.
         """
-        self._value = None
         raise NotImplementedError(
             "do_force_value() function must be defined for property '{0}'".format(
                 self.__class__.__name__))

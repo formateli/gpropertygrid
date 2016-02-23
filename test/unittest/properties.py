@@ -3,6 +3,8 @@
 # contains the full copyright notices and license terms.
 
 import unittest
+from gpropertygrid import PropertyGrid
+from gpropertygrid.properties import PropertyString
 
 class PropertiesTest(unittest.TestCase):
     def testProperties(self):

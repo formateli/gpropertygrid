@@ -5,10 +5,12 @@
 from gi.repository import Gtk, GObject
 from . properties import PropertyGridProperty
 
+
 class PropertyGrid(Gtk.Box, GObject.GObject):
     __gsignals__ = {
-        'changed': (GObject.SIGNAL_RUN_FIRST, None,
-                      (PropertyGridProperty,))
+        'changed': (
+            GObject.SIGNAL_RUN_FIRST, None,
+            (PropertyGridProperty,))
     }
 
     def __init__(self, title):
@@ -20,12 +22,13 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         Signals:
             **changed**: Emited when a property object changes.
         """
-    
-        Gtk.Box.__init__(self,
-                    orientation=Gtk.Orientation.VERTICAL,
-                    spacing=1)
+
+        Gtk.Box.__init__(
+            self,
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=1)
         GObject.GObject.__init__(self)
-        
+
         self._groups = []
         self._properties = []
         self._property_names = {}
@@ -109,7 +112,7 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         Returns:
             A PropertyGridProperty object. None if property is not found.
         """
-        if not id in self._property_names:
+        if id not in self._property_names:
             return
         return self._property_names[id]
 
@@ -117,7 +120,8 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         """Sets the expanded state of the group.
 
         Args:
-            expanded (boolean): If True, group expands to show its properties.
+            expanded (boolean): If True, group expands to show
+                its properties.
         """
         for g in self._groups:
             g.set_expanded(expanded)
@@ -130,12 +134,14 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         self.emit("changed", property_)
 
     def _on_draw(self, wg, data):
-        self._sw.set_size_request(self.get_allocated_width() - 50,
-            self.get_allocated_height() - self._description.get_allocated_height() - 40)
+        w = self.get_allocated_width() - 50
+        h = self.get_allocated_height() - \
+            self._description.get_allocated_height() - 40
+        self._sw.set_size_request(w, h)
 
     def _add_property(self, group, property_):
         property_._group = group
-        if property_.id == None:
+        if property_.id is None:
             property_.id = "property_{0}".format(self._next_id)
             self._next_id += 1
         if property_.id in self._property_names:
@@ -166,7 +172,7 @@ class PropertyGridGroup(Gtk.Expander):
         super(PropertyGridGroup, self).__init__()
         self._grid = None
         self._properties = []
-        self.set_name("group_header")        
+        self.set_name("group_header")
 
         self._row = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL, spacing=0)
@@ -188,7 +194,7 @@ class PropertyGridGroup(Gtk.Expander):
     @property
     def properties(self):
         """
-        Read only. List of PropertyGridProperty objects 
+        Read only. List of PropertyGridProperty objects
         that belongs to group.
         """
         return self._properties
@@ -225,4 +231,3 @@ class _PropertyDescription(Gtk.Frame):
     def set_value(self, name, description):
         self._name.set_text(name)
         self._description.set_text(description)
-

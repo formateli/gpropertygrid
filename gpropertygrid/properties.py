@@ -261,6 +261,51 @@ class PropertyString(PropertyGridProperty):
         self.on_change()
 
 
+class PropertyStringMultiline(PropertyGridProperty):
+    def __init__(
+            self, name,
+            id=None,
+            default=None,
+            description=None,
+            force_value=False):
+        """A property that manages multiline string.
+
+        Value is a string or None.
+
+        See :class:`PropertyGridProperty` for parameters.
+
+        Note:
+            *default* parameter must be a valid string object.
+        """
+        self._txt = Gtk.Entry()
+        self._txt.connect("changed", self._on_txt_changed)
+
+        super(PropertyStringMultiline, self).__init__(
+            name=name,
+            value_widget=self._txt,
+            id=id,
+            default=default,
+            description=description,
+            force_value=force_value)
+
+    def do_force_value(self, force_value, default):
+        if default is not None and force_value:
+            self._value = default
+        if default is None:
+            default = ''
+        self._txt.set_text(default)
+
+    def on_change(self):
+        if not super(PropertyStringMultiline, self).on_change():
+            return False
+        self._value = self._txt.get_text()
+        self.has_changed()
+        return True
+
+    def _on_txt_changed(self, wg):
+        self.on_change()
+
+
 class PropertyBool(PropertyGridProperty):
     def __init__(
             self, name, id=None,

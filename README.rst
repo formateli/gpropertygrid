@@ -7,6 +7,10 @@ Gtk 3 Property Grid widget for Python.
 .. image:: http://www.formateli.com/software/images/gpropertygrid_qs_2.png
     :alt: GPropertyGrid example
 
+.. image:: http://www.formateli.com/software/images/gpropertygrid_qs_4.png
+    :alt: GPropertyGrid example
+
+
 Features
 --------
 

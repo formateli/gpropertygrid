@@ -24,4 +24,3 @@ Uninstall (Ubuntu)::
 
     sudo bash -c "cat files.txt | xargs rm -rf"
 
-

@@ -134,7 +134,7 @@ We can retrieve property values in one of two ways:
 Properties implemented
 ----------------------
 
-Currently GPropertyGrid has implemented the following porperties:
+Currently GPropertyGrid has implemented the following properties:
 
 * :py:class:`PropertyString <gpropertygrid.properties.PropertyString>`
 * :py:class:`PropertyBool <gpropertygrid.properties.PropertyBool>`
@@ -152,7 +152,7 @@ New properties can be created deriving from
 
 Take care of following when creating a new porperty class:
 
-* The ``do_force_value`` function must overriden. This way we indicate how default value must be treated at creation time.
+* The ``do_force_value`` function must be overriden. This way we indicate how default value must be treated at creation time.
 * The ``on_change`` function must be extended. This way we can tell to property grid that value has changed.
 * In special cases ``update_display_value`` function can be overriden if property need a custom display representation.
 

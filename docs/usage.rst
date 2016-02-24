@@ -1,8 +1,8 @@
 Usage
 =====
 
-Following topics covers the usage 
-of GPropertyGrid and how easy it is 
+Following topics covers the usage
+of GPropertyGrid and how easy it is
 to implement.
 
 
@@ -15,8 +15,7 @@ Quick example
     from gpropertygrid import PropertyGrid
     from gpropertygrid.properties import PropertyString
 
-    class PropertyGridTest(Gtk.Window):
-
+    class PropertyGridExample(Gtk.Window):
         def __init__(self):
             Gtk.Window.__init__(self, title="PropertyGrid Quick Sample")
             self.set_border_width(10)
@@ -39,6 +38,11 @@ Quick example
             group.add_property(str_property)
 
             self.add(pg)
+
+    win = PropertyGridExample()
+    win.connect("delete-event", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
 
 In the example above, property grid is created in four steps:
 
@@ -99,6 +103,9 @@ Now its new value is showing in the row property
     :alt: GPropertyGrid quick sample 1
 
 
+Retrieving values
+-----------------
+
 We can retrieve property values in one of two ways:
 
 * Retrieving the property object from grid and get its value::
@@ -127,11 +134,12 @@ We can retrieve property values in one of two ways:
 Properties implemented
 ----------------------
 
-Currently GPropertyGrid has implemented the following porperties:
+Currently GPropertyGrid has implemented the following properties:
 
 * :py:class:`PropertyString <gpropertygrid.properties.PropertyString>`
 * :py:class:`PropertyBool <gpropertygrid.properties.PropertyBool>`
 * :py:class:`PropertyColor <gpropertygrid.properties.PropertyColor>`
+* :py:class:`PropertyList <gpropertygrid.properties.PropertyList>`
 
 We expect to extend this list in new realeases.
 
@@ -142,54 +150,12 @@ Creating a new Property
 New properties can be created deriving from 
 :py:class:`PropertyGridProperty <gpropertygrid.properties.PropertyGridProperty>` class.
 
-Two important things must be take on account when creating a new porperty class:
+Take care of following when creating a new porperty class:
 
-* The ``self.set_value_text`` member must be set. It is a string representation of current value.
-* The ``on_change`` function must be overriden. This way we tell to the property grid that value has changed.
+* The ``do_force_value`` function must be overriden. This way we indicate how default value must be treated at creation time.
+* The ``on_change`` function must be extended. This way we can tell to property grid that value has changed.
+* In special cases ``update_display_value`` function can be overriden if property need a custom display representation.
 
-The implemetation code of the 
-:py:class:`PropertyString <gpropertygrid.properties.PropertyString>` class 
-is as follow:
-
-::
-
-    class PropertyString(PropertyGridProperty):
-        def __init__(self, name, id,
-                    default=None,
-                    description=None,
-                    force_value=False):
-
-            # It is the value_widget
-            self._txt = Gtk.Entry()
-            self._txt.connect("changed", self._on_txt_changed)
-
-            super(PropertyString, self).__init__(
-                name=name, 
-                value_widget=self._txt,
-                id=id, 
-                default=default, 
-                description=description, 
-                force_value=force_value)
-
-            self.set_value_text(default)
-            self._txt.set_text(default)
-
-        def on_change(self):
-            # We call this first because 
-            # we need to know that property has the focus.
-            if not super(PropertyString, self).on_change():
-                return False
-
-            self.value = self._txt.get_text()
-            self.set_value_text(self.value)
-
-            # Here we tell to the property grid 
-            # that value has changed.
-            self.has_changed()
-
-            # Allways return True
-            return True
-
-        def _on_txt_changed(self, wg):
-            self.on_change()
+See :py:class:`PropertyString <gpropertygrid.properties.PropertyString>` class 
+as a basic example of how to extend :py:class:`PropertyGridProperty <gpropertygrid.properties.PropertyGridProperty>` class.
 

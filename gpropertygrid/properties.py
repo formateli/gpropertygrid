@@ -4,36 +4,41 @@
 
 from gi.repository import Gtk, Gdk, Pango
 
+
 class PropertyGridProperty(Gtk.Paned):
-    def __init__(self, name,
-                value_widget,
-                id=None,
-                default=None,
-                description=None,
-                force_value=False):
+    def __init__(
+            self, name,
+            value_widget,
+            id=None,
+            default=None,
+            description=None,
+            force_value=False):
         """Main property class from where all property classes must derives.
 
         Args:
             name (string): The name of the property.
 
-            value_widget (gtk widget): The widget used for manages the property value.
+            value_widget (gtk widget): The widget used for manages
+                the property value.
 
-            id (string): Optional. The id of the property. 
-                Must be uniq per property. 
-                It is only important if this property will be retreiving by 
-                the property grid using the get_property_by_id function. 
+            id (string): Optional. The id of the property.
+                Must be uniq per property.
+                It is only important if this property will be
+                retreived by the property grid using the
+                get_property_by_id function.
                 Default None.
 
             default: Optional. The default value for this property.
 
             description (string): Optional. The property description.
 
-            force_value (boolean): Optional. If True, default is asigned to the property value
-                at object creation time, otherwise value remains None until it changes by user.
+            force_value (boolean): Optional. If True, default is asigned
+                to the property value at object creation time,
+                otherwise value remains None until it changes by user.
         """
 
-        super(PropertyGridProperty,
-                self).__init__(orientation=Gtk.Orientation.HORIZONTAL)
+        super(PropertyGridProperty, self).__init__(
+            orientation=Gtk.Orientation.HORIZONTAL)
 
         self.name = name
         self.id = id
@@ -84,9 +89,8 @@ class PropertyGridProperty(Gtk.Paned):
 
             default: Default value to set if force_value is True.
         """
-        self._value = None
-        raise NotImplementedError(
-            "do_force_value() function must be defined for property '{0}'".format(
+        error = "do_force_value() function must be defined for property '{0}'"
+        raise NotImplementedError(error.format(
                 self.__class__.__name__))
 
     def update_display_value(self):
@@ -97,7 +101,7 @@ class PropertyGridProperty(Gtk.Paned):
         special representation were needed, in this case
         function must be overriden.
         """
-        if self._value == None:
+        if self._value is None:
             text = '[No value]'
         else:
             text = str(self._value)
@@ -151,7 +155,8 @@ class PropertyGridProperty(Gtk.Paned):
 
     def _show_hide_value_widget(self):
         if self._read_only:
-            self._on_enter() # This way we force on_leave() on all other properties.
+            # This way we force on_leave() on all other properties.
+            self._on_enter()
             return
         curr_wg = self._display_widget.get_children()[0]
         if self._has_focus:
@@ -189,14 +194,15 @@ class _DisplayWidget(Gtk.Box):
         self._main_label.set_name('cell')
         self._event_box.add(self._main_label)
 
-        self._event_box.connect("enter-notify-event", notify_handler,
-                    {"index":index,
-                     "type":"in"})
-        self._event_box.connect("leave-notify-event", notify_handler,
-                    {"index":index,
-                     "type":"out"})
-        self._event_box.connect("button-press-event", click_handler,
-                                {"index":index})
+        self._event_box.connect(
+            "enter-notify-event", notify_handler,
+            {"index": index, "type": "in"})
+        self._event_box.connect(
+            "leave-notify-event", notify_handler,
+            {"index": index, "type": "out"})
+        self._event_box.connect(
+            "button-press-event", click_handler,
+            {"index": index})
 
         self.box = Gtk.Box()
         self.box.pack_start(self._event_box, True, True, 0)
@@ -211,11 +217,12 @@ class _DisplayWidget(Gtk.Box):
 
 
 class PropertyString(PropertyGridProperty):
-    def __init__(self, name,
-                id=None,
-                default=None,
-                description=None,
-                force_value=False):
+    def __init__(
+            self, name,
+            id=None,
+            default=None,
+            description=None,
+            force_value=False):
         """A String property class.
 
         Value is a string or None.
@@ -237,9 +244,9 @@ class PropertyString(PropertyGridProperty):
             force_value=force_value)
 
     def do_force_value(self, force_value, default):
-        if default != None and force_value:
+        if default is not None and force_value:
             self._value = default
-        if default == None:
+        if default is None:
             default = ''
         self._txt.set_text(default)
 
@@ -255,8 +262,10 @@ class PropertyString(PropertyGridProperty):
 
 
 class PropertyBool(PropertyGridProperty):
-    def __init__(self, name, id=None,
-            default=None, description=None, force_value=False):
+    def __init__(
+            self, name, id=None,
+            default=None, description=None,
+            force_value=False):
         """A Boolean property class.
 
         Value is True, False or None.
@@ -274,13 +283,13 @@ class PropertyBool(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
-        if default == True:
+        if default is True:
             self._check.set_active(True)
 
     def do_force_value(self, force_value, default):
         if default and force_value:
             self._value = default
-        if default == True:
+        if default is True:
             self._check.set_active(True)
 
     def on_change(self):
@@ -295,8 +304,10 @@ class PropertyBool(PropertyGridProperty):
 
 
 class PropertyColor(PropertyGridProperty):
-    def __init__(self, name, id=None,
-            default=None, description=None, force_value=False):
+    def __init__(
+            self, name, id=None,
+            default=None, description=None,
+            force_value=False):
         """A Color property class.
 
         Value is a Gdk.RGBA object or None.
@@ -304,11 +315,12 @@ class PropertyColor(PropertyGridProperty):
         See :class:`PropertyGridProperty` for parameters.
 
         Note:
-            *default* parameter must be a color string that can be used to create
-            the Gdk.RGBA object. Ex: red, black, #000000, rgb(52,101,164)
+            *default* parameter must be a color string that can be
+            used to create the Gdk.RGBA object.
+            Ex: red, black, #000000, rgb(52,101,164)
         """
         hbox = Gtk.Box(
-            orientation = Gtk.Orientation.HORIZONTAL)
+            orientation=Gtk.Orientation.HORIZONTAL)
 
         self._txt = Gtk.Entry()
         self._txt.connect("changed", self._on_txt_changed)
@@ -325,7 +337,8 @@ class PropertyColor(PropertyGridProperty):
         self._style_provider = Gtk.CssProvider()
         ctx = self._color_label.get_style_context()
         ctx.add_provider(
-            self._style_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+            self._style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
         super(PropertyColor, self).__init__(
             name=name,
@@ -387,7 +400,7 @@ class PropertyColor(PropertyGridProperty):
             wd * 4, self._color_label.get_allocated_height())
 
     def _get_css_color_class(self, color):
-        css = '#cell.color_label {background-color: ' + color + ';}'    
+        css = '#cell.color_label {background-color: ' + color + ';}'
         return css.encode('utf8')
 
     def _on_toggled(self, wg):
@@ -397,7 +410,7 @@ class PropertyColor(PropertyGridProperty):
         self.on_change()
 
     def _get_color_from_str(self, str_color):
-        if str_color == None:
+        if str_color is None:
             return
         color = Gdk.RGBA()
         if color.parse(str_color):
@@ -405,8 +418,9 @@ class PropertyColor(PropertyGridProperty):
 
 
 class PropertyList(PropertyGridProperty):
-    def __init__(self, name, list_values,
-            id=None, default=None, 
+    def __init__(
+            self, name, list_values,
+            id=None, default=None,
             description=None, force_value=False):
         """A List property class.
 
@@ -429,8 +443,8 @@ class PropertyList(PropertyGridProperty):
             *default* parameter must a dictionary of one element,
             where key can be 'id' or 'string'.
             Ex: {'id': '5'} select the element in the dropdown with id='5'.
-            {'string': 'Hello world'} select the element in the dropdown with
-            string='Hello world'.
+            {'string': 'Hello world'} select the element in the dropdown
+            with string='Hello world'.
         """
         self._list_values = list_values
 
@@ -452,7 +466,7 @@ class PropertyList(PropertyGridProperty):
                 found = self._set_active(0, default['id'])
             else:
                 found = self._set_active(1, default['string'])
-        self._value == None
+        self._value is None
         if force_value:
             if found > -1:
                 self._value = self._list_values[found]
@@ -478,7 +492,7 @@ class PropertyList(PropertyGridProperty):
     def _set_active(self, index, value):
         found = False
         found_index = 0
-        for l in self._list_values:            
+        for l in self._list_values:
             if l[index] == value:
                 found = True
                 break
@@ -492,4 +506,3 @@ class PropertyList(PropertyGridProperty):
 
     def _on_combo_changed(self, wg):
         self.on_change()
-

@@ -1,8 +1,9 @@
-# This file is part of GPropertyGrid project. 
-# The COPYRIGHT file at the top level of this repository 
+# This file is part of GPropertyGrid project.
+# The COPYRIGHT file at the top level of this repository
 # contains the full copyright notices and license terms.
 
-import sys, os
+import sys
+import os
 
 try:
     DIR = os.path.dirname(os.path.realpath(__file__))
@@ -17,12 +18,13 @@ from gpropertygrid import PropertyGrid
 from gpropertygrid.properties import PropertyString, \
     PropertyBool, PropertyColor, PropertyList
 
+
 class PropertyGridExample(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="PropertyGrid Quick Sample")
         self.set_border_width(10)
         self.set_size_request(300, 300)
-        
+
         box = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
             spacing=1)

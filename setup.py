@@ -5,35 +5,36 @@
 """GPropertyGrid setup script"""
 
 from distutils.core import setup
-from gpropertygrid import VERSION
+from gpropertygrid import VERSION, AUTHOR
+
 
 def run():
-    setup(name="GPropertyGrid",
+    setup(
+        name="GPropertyGrid",
         version=VERSION,
         url="http://www.formateli.com/software/gpropertygrid/",
-        download_url="", #TODO 
+        download_url="",  # TODO
         description="Python Gtk 3 property grid widget.",
-        author="Fredy Ramirez",
-        author_email="", #TODO
-        maintainer_email="", #TODO
+        author=AUTHOR,
+        author_email="",  # TODO
+        maintainer_email="",  # TODO
         classifiers=[
-            "Development Status :: Prototype",
-            "Environment :: Win32 (MS Windows)",
-            "Environment :: X11 Applications",
+            "Development Status :: 4 - Beta",
+            "Environment :: X11 Applications :: GTK",
             "Intended Audience :: Developers",
             "Intended Audience :: Information Technology",
-            "License :: OSI Approved :: GNU General Public License v3",
+            "License :: OSI Approved :: " \
+            "GNU General Public License v3 or later (GPLv3+)",
             "Operating System :: OS Independent",
             "Programming Language :: Python",
         ],
         license="GNU General Public License v3",
         platforms=["OS Independent"],
-        packages=["gpropertygrid",],
+        packages=["gpropertygrid", ],
         package_data={},
         scripts=[],
-        data_files=[("docs", ["README", "LICENSE", "COPYRIGHT"])],
+        data_files=[("docs", ["README.rst", "LICENSE", "COPYRIGHT"])],
     )
 
 if __name__ == "__main__":
     run()
-

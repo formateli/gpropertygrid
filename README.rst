@@ -2,7 +2,11 @@ GPropertyGrid
 =============
 
 GPropertyGrid is a simple and easy to use 
-Gtk 3 Property Grid widget for Python.
+Python Gtk 3 property grid widget.
+
+The main goal is to create a property grid based
+on existing Gtk widgets, and an easy way
+to set and retrieve properties values.
 
 .. image:: http://www.formateli.com/software/images/gpropertygrid_qs_2.png
     :alt: GPropertyGrid example

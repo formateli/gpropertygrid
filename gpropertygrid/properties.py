@@ -536,13 +536,14 @@ class PropertyList(PropertyGridProperty):
         Args:
             list_values (list): List of values to display.
                 Its format is as follow:
-                [
-                    [id_0, string_0],
-                    [id_1, string_1],
-                    [id_n, string_n],
-                ]
+                ::
+                    [
+                        [id_0, string_0],
+                        [id_1, string_1],
+                        [id_n, string_n],
+                    ]
                 string_n is the string to show in the dropdown menu and
-                id_n is its id, it can be None if it is not necessary.
+                id_n is its id, id can be None if it is not necessary.
 
         Note:
             *default* parameter must a dictionary of one element,

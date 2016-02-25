@@ -16,7 +16,8 @@ except NameError:
 from gi.repository import Gtk
 from gpropertygrid import PropertyGrid
 from gpropertygrid.properties import PropertyString, \
-    PropertyBool, PropertyColor, PropertyList
+    PropertyBool, PropertyColor, PropertyList, \
+    PropertyStringMultiline
 
 
 class PropertyGridExample(Gtk.Window):
@@ -61,10 +62,18 @@ class PropertyGridExample(Gtk.Window):
         # A string with lines
         str_lines = PropertyString(
             name="String Lines",
-            id="str_lines",
+            id="str_lines",            
             default="Line 1\nLine 2\nLine 3",
             description="This is the string with lines")
         group.add_property(str_lines)
+
+        str_multiline = PropertyStringMultiline(
+            name="String multiline",
+            parent_window=self,
+            id="str_multiline",
+            default="Line 1\nLine 2\nLine 3",
+            description="This is a multiline string")
+        group.add_property(str_multiline)
 
         # Other group
         other_group = pg.create_group("Other group")

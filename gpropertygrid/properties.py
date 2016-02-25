@@ -262,8 +262,42 @@ class PropertyString(PropertyGridProperty):
 
 
 class PropertyStringMultiline(PropertyGridProperty):
+    class _DialogMultiline(Gtk.Dialog):
+        def __init__(self, parent, text):
+            super(PropertyStringMultiline._DialogMultiline, self).__init__(
+                'Multiline string', parent, 0,
+                (
+                    Gtk.STOCK_CANCEL,
+                    Gtk.ResponseType.CANCEL,
+                    Gtk.STOCK_OK, Gtk.ResponseType.OK
+                ))
+
+            self.set_modal(True)
+            self.set_default_size(300, 300)
+
+            text_view = Gtk.TextView()
+            self._buffer = text_view.get_buffer()
+            if text is not None:
+                self._buffer.set_text(text)
+
+            sw = Gtk.ScrolledWindow()
+            sw.set_shadow_type(Gtk.ShadowType.IN)
+            sw.add(text_view)
+
+            box = self.get_content_area()
+            box.pack_start(sw, True, True, 0)
+            self.show_all()
+
+        def get_text(self):
+            return self._buffer.get_text(
+                self._buffer.get_start_iter(),
+                self._buffer.get_end_iter(),
+                True)
+
     def __init__(
-            self, name,
+            self,
+            name,
+            parent_window,
             id=None,
             default=None,
             description=None,
@@ -274,36 +308,62 @@ class PropertyStringMultiline(PropertyGridProperty):
 
         See :class:`PropertyGridProperty` for parameters.
 
+        Args:
+            parent_window (Gtk.Window): The parent window.
+
         Note:
             *default* parameter must be a valid string object.
         """
-        self._txt = Gtk.Entry()
-        self._txt.connect("changed", self._on_txt_changed)
+        self._window = parent_window
+
+        hbox = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL)
+
+        self._label = Gtk.Label(xalign=0)
+        self._label.set_single_line_mode(True)
+        self._label.set_ellipsize(Pango.EllipsizeMode.END)
+        self._button = Gtk.Button.new_with_label('...')
+        self._button.connect("clicked", self._on_click_button)
+
+        hbox.pack_start(self._label, True, True, 0)
+        hbox.pack_start(self._button, True, True, 0)
+
+        self._default = default
 
         super(PropertyStringMultiline, self).__init__(
             name=name,
-            value_widget=self._txt,
+            value_widget=hbox,
             id=id,
             default=default,
             description=description,
             force_value=force_value)
 
     def do_force_value(self, force_value, default):
-        if default is not None and force_value:
-            self._value = default
-        if default is None:
-            default = ''
-        self._txt.set_text(default)
+        if default is not None:
+            self._label.set_text(default)
+            if force_value:
+                self._value = default
 
-    def on_change(self):
+    def on_change(self, txt):
         if not super(PropertyStringMultiline, self).on_change():
             return False
-        self._value = self._txt.get_text()
+        self._value = txt
+        self._label.set_text(txt)
         self.has_changed()
         return True
 
-    def _on_txt_changed(self, wg):
-        self.on_change()
+    def _on_click_button(self, btn):
+        txt = None
+        if self._value is not None:
+            txt = self._value
+        elif self._default is not None:
+            txt = self._default
+        dialog = PropertyStringMultiline._DialogMultiline(
+            self._window, txt)
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.on_change(dialog.get_text())
+        dialog.destroy()
 
 
 class PropertyBool(PropertyGridProperty):

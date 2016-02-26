@@ -576,7 +576,7 @@ class PropertyList(PropertyGridProperty):
                 found = self._set_active(0, default['id'])
             else:
                 found = self._set_active(1, default['string'])
-        self._value is None
+        self._value = None
         if force_value:
             if found > -1:
                 self._value = self._list_values[found]

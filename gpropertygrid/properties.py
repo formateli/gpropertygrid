@@ -10,15 +10,15 @@ class PropertyGridProperty(Gtk.Paned):
             self, name,
             value_widget,
             id=None,
-            default=None,
             description=None,
+            default=None,
             force_value=False):
         """Main property class from where all property classes must derives.
 
         Args:
             name (string): The name of the property.
 
-            value_widget (gtk widget): The widget used for manages
+            value_widget (Gtk.Widget): The widget used for manages
                 the property value.
 
             id (string): Optional. The id of the property.
@@ -28,13 +28,16 @@ class PropertyGridProperty(Gtk.Paned):
                 get_property_by_id function.
                 Default None.
 
-            default: Optional. The default value for this property.
+            description (string): Optional.
+                The property description. Default None.
 
-            description (string): Optional. The property description.
+            default: Optional. The default value for this property.
+                Default None.
 
             force_value (boolean): Optional. If True, default is asigned
                 to the property value at object creation time,
                 otherwise value remains None until it changes by user.
+                Default False.
         """
 
         super(PropertyGridProperty, self).__init__(
@@ -542,11 +545,12 @@ class PropertyList(PropertyGridProperty):
                         [id_1, string_1],
                         [id_n, string_n],
                     ]
+
                 string_n is the string to show in the dropdown menu and
                 id_n is its id, id can be None if it is not necessary.
 
         Note:
-            *default* parameter must a dictionary of one element,
+            *default* parameter must be a dictionary of one element,
             where key can be 'id' or 'string'.
             Ex: {'id': '5'} select the element in the dropdown with id='5'.
             {'string': 'Hello world'} select the element in the dropdown

@@ -54,7 +54,7 @@ class PropertyGridProperty(Gtk.Paned):
         self._has_focus = False
         self._read_only = False
 
-        self.do_force_value(force_value, default)
+        self.init_value(force_value, default)
 
         self._name_widget = self._get_display_widget(0)
         self._name_widget._main_label.set_text(name)
@@ -78,13 +78,13 @@ class PropertyGridProperty(Gtk.Paned):
         """
         return self._value
 
-    def do_force_value(self, force_value, default):
-        """Forces default value at property creation time.
+    def init_value(self, force_value, default):
+        """Sets the initial state of property value at creation time.
 
         This method is called when property object is created,
         It is a virtual method, so each property must override it.
 
-        It verify the default value and if it has to be forced to
+        It verifies the default value and if it has to be forced to
         get a value, and set the value_widget.
 
         Args:
@@ -92,7 +92,7 @@ class PropertyGridProperty(Gtk.Paned):
 
             default: Default value to set if force_value is True.
         """
-        error = "do_force_value() function must be defined for property '{0}'"
+        error = "init_value() function must be defined for property '{0}'"
         raise NotImplementedError(error.format(
                 self.__class__.__name__))
 
@@ -246,7 +246,7 @@ class PropertyString(PropertyGridProperty):
             description=description,
             force_value=force_value)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         if default is not None and force_value:
             self._value = default
         if default is None:
@@ -341,7 +341,7 @@ class PropertyStringMultiline(PropertyGridProperty):
             description=description,
             force_value=force_value)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         if default is not None:
             self._label.set_text(default)
             if force_value:
@@ -394,7 +394,7 @@ class PropertyBool(PropertyGridProperty):
         if default is True:
             self._check.set_active(True)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         if default and force_value:
             self._value = default
         if default is True:
@@ -474,7 +474,7 @@ class PropertyColor(PropertyGridProperty):
         self.has_changed()
         return True
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         color = self._get_color_from_str(default)
         if color:
             if force_value:
@@ -569,7 +569,7 @@ class PropertyList(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         found = -1
         if default:
             if 'id' in default:

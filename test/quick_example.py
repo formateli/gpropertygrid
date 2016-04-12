@@ -62,7 +62,7 @@ class PropertyGridExample(Gtk.Window):
         # A string with lines
         str_lines = PropertyString(
             name="String Lines",
-            id="str_lines",            
+            id="str_lines",
             default="Line 1\nLine 2\nLine 3",
             description="This is the string with lines")
         group.add_property(str_lines)

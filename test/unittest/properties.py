@@ -3,15 +3,17 @@
 # contains the full copyright notices and license terms.
 
 import unittest
+from gi.repository import Gdk
 from gpropertygrid import PropertyGrid
-from gpropertygrid.properties import PropertyString
+from gpropertygrid.properties import PropertyString, \
+    PropertyColor
 
 
 class PropertiesTest(unittest.TestCase):
     def testProperties(self):
         pass
 
-    def testPropertiesString(self):
+    def testPropertyString(self):
         ps = PropertyString(
             name='Test string',
             default='Hello world!',
@@ -22,4 +24,20 @@ class PropertiesTest(unittest.TestCase):
             name='Test string',
             default='Hello world!',
             force_value=True)
-        self.assertEqual(ps.value, 'Hello world!')
+        self.assertEqual(ps.value[0], 'Hello world!')
+
+    def testPropertyColor(self):
+        pc = PropertyColor(name='Test color')
+        self.assertEqual(pc.value, None)
+
+        pc = PropertyColor(
+            name='Test color',
+            default='black',
+            force_value=False)
+        self.assertEqual(pc.value, None)
+
+        pc = PropertyColor(
+            name='Test color',
+            default='black',
+            force_value=True)
+        self.assertEqual(isinstance(pc.value[0], Gdk.RGBA), True)

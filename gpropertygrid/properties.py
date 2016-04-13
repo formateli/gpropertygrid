@@ -74,14 +74,14 @@ class PropertyGridProperty(Gtk.Paned):
     @property
     def value(self):
         """
-        The current value of the property.
+        List that contents current value of property.
         """
         return self._value
 
     def init_value(self, force_value, default):
         """Sets the initial state of property value at creation time.
 
-        This method is called when property object is created,
+        This method is called automatically when property is created,
         It is a virtual method, so each property must override it.
 
         It verifies the default value and if it has to be forced to
@@ -107,7 +107,7 @@ class PropertyGridProperty(Gtk.Paned):
         if self._value is None:
             text = '[No value]'
         else:
-            text = str(self._value)
+            text = str(self._value[0])
         self._display_widget._main_label.set_text(text)
 
     def has_changed(self):
@@ -120,10 +120,10 @@ class PropertyGridProperty(Gtk.Paned):
         self.update_display_value()
 
     def set_read_only(self, readonly):
-        """Sets ReadOnly state of the property.
+        """Sets Read only state of the property.
 
         Args:
-            readonly (boolean): Value that sets the ReadOnly state.
+            readonly (boolean): Value that sets the read only state.
         """
         self._read_only = readonly
         self._display_widget._main_label.set_selectable(readonly)
@@ -248,7 +248,7 @@ class PropertyString(PropertyGridProperty):
 
     def init_value(self, force_value, default):
         if default is not None and force_value:
-            self._value = default
+            self._value = [default, ]
         if default is None:
             default = ''
         self._txt.set_text(default)
@@ -256,7 +256,9 @@ class PropertyString(PropertyGridProperty):
     def on_change(self):
         if not super(PropertyString, self).on_change():
             return False
-        self._value = self._txt.get_text()
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = self._txt.get_text()
         self.has_changed()
         return True
 
@@ -345,12 +347,14 @@ class PropertyStringMultiline(PropertyGridProperty):
         if default is not None:
             self._label.set_text(default)
             if force_value:
-                self._value = default
+                self._value = [default, ]
 
     def on_change(self, txt):
         if not super(PropertyStringMultiline, self).on_change():
             return False
-        self._value = txt
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = txt
         self._label.set_text(txt)
         self.has_changed()
         return True
@@ -358,7 +362,7 @@ class PropertyStringMultiline(PropertyGridProperty):
     def _on_click_button(self, btn):
         txt = None
         if self._value is not None:
-            txt = self._value
+            txt = self._value[0]
         elif self._default is not None:
             txt = self._default
         dialog = PropertyStringMultiline._DialogMultiline(
@@ -391,19 +395,18 @@ class PropertyBool(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
-        if default is True:
-            self._check.set_active(True)
-
     def init_value(self, force_value, default):
-        if default and force_value:
-            self._value = default
         if default is True:
             self._check.set_active(True)
+            if force_value:
+                self._value = [default, ]
 
     def on_change(self):
         if not super(PropertyBool, self).on_change():
             return False
-        self._value = self._check.get_active()
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = self._check.get_active()
         self.has_changed()
         return True
 
@@ -460,36 +463,36 @@ class PropertyColor(PropertyGridProperty):
         self._display_widget.box.reorder_child(self._color_label, 0)
         self._display_widget.box.connect("draw", self._on_draw_color_display)
 
-    def on_change(self):
-        if not super(PropertyColor, self).on_change():
-            return False
-
-        color = self._get_color_from_str(self._txt.get_text())
-        if color:
-            self._buttom.set_rgba(color)
-            self._value = self._buttom.get_rgba()
-        else:
-            self._buttom.set_rgba(Gdk.RGBA())
-            self._value = None
-        self.has_changed()
-        return True
-
     def init_value(self, force_value, default):
         color = self._get_color_from_str(default)
         if color:
             if force_value:
-                self._value = color
+                self._value = [color, ]
             self._buttom.set_rgba(color)
             self._txt.set_text(default)
         else:
             self._txt.set_text('')
 
+    def on_change(self):
+        if not super(PropertyColor, self).on_change():
+            return False
+        if self._value is None:
+            self._value = [None, ]
+        color = self._get_color_from_str(self._txt.get_text())
+        if color:
+            self._buttom.set_rgba(color)
+            self._value[0] = self._buttom.get_rgba()
+        else:
+            self._buttom.set_rgba(Gdk.RGBA())
+            self._value[0] = None
+        self.has_changed()
+        return True
+
     def update_display_value(self):
         ctx = self._color_label.get_style_context()
-
-        if self._value is None:
+        ctx.remove_class('color_label')
+        if self._value is None or self._value[0] is None:
             super(PropertyColor, self).update_display_value()
-            ctx.remove_class('color_label')
             return
 
         self._display_widget._main_label.set_text(

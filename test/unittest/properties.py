@@ -3,10 +3,10 @@
 # contains the full copyright notices and license terms.
 
 import unittest
-from gi.repository import Gdk
+from gi.repository import Gtk, Gdk
 from gpropertygrid import PropertyGrid
 from gpropertygrid.properties import PropertyString, \
-    PropertyColor
+    PropertyColor, PropertyList
 
 
 class PropertiesTest(unittest.TestCase):
@@ -41,3 +41,49 @@ class PropertiesTest(unittest.TestCase):
             default='black',
             force_value=True)
         self.assertEqual(isinstance(pc.value[0], Gdk.RGBA), True)
+
+    def testPropertyList(self):
+        pl = PropertyList(name='Test list', list_values=None)
+        self.assertEqual(pl.value, None)
+        pl = PropertyList(name='Test list', list_values=[])
+        self.assertEqual(pl.value, None)
+
+        values = [
+            ['0', 'ZERO'],
+            ['1', 'ONE'],
+            ['2', 'TWO']
+        ]
+
+        pl = PropertyList(
+            name='Test list',
+            list_values=values)
+        self.assertEqual(pl.value, None)
+
+        pl = PropertyList(
+            name='Test list',
+            list_values=values,
+            default={'id': '1'},
+            force_value=False)
+        self.assertEqual(pl.value, None)
+
+        pl = PropertyList(
+            name='Test list',
+            list_values=values,
+            default={'id': '1'},
+            force_value=True)
+        self.assertEqual(pl.value[0], '1')
+        self.assertEqual(pl.value[1], 'ONE')
+
+        # With entry
+        pl = PropertyList(
+            name='Test list',
+            list_values=values,
+            with_entry=True,
+            default={'id': '1'},
+            force_value=True)
+        self.assertEqual(pl.value[0], '1')
+        self.assertEqual(pl.value[1], 'ONE')
+
+        entry = Gtk.Bin.get_child(pl._combo)
+        entry.set_text('Hello')
+        self.assertEqual(pl._combo.get_active_text(), 'Hello')

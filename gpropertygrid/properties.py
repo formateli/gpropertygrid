@@ -531,6 +531,7 @@ class PropertyColor(PropertyGridProperty):
 class PropertyList(PropertyGridProperty):
     def __init__(
             self, name, list_values,
+            with_entry=False,
             id=None, default=None,
             description=None, force_value=False):
         """A List property class.
@@ -552,6 +553,9 @@ class PropertyList(PropertyGridProperty):
                 string_n is the string to show in the dropdown menu and
                 id_n is its id, id can be None if it is not necessary.
 
+            with_entry (boolean): Optional. Uses an entry to manually
+                enter a value.
+
         Note:
             *default* parameter must be a dictionary of one element,
             where key can be 'id' or 'string'.
@@ -559,11 +563,18 @@ class PropertyList(PropertyGridProperty):
             {'string': 'Hello world'} select the element in the dropdown
             with string='Hello world'.
         """
+        self._has_entry = False
         self._list_values = list_values
 
-        self._combo = Gtk.ComboBoxText()
-        for v in list_values:
-            self._combo.append(v[0], v[1])
+        if with_entry:
+            self._combo = Gtk.ComboBoxText.new_with_entry()
+            self._has_entry = True
+        else:
+            self._combo = Gtk.ComboBoxText.new()
+
+        if list_values is not None:
+            for v in list_values:
+                self._combo.append(v[0], v[1])
 
         self._combo.connect('changed', self._on_combo_changed)
 
@@ -573,21 +584,37 @@ class PropertyList(PropertyGridProperty):
                 force_value=force_value)
 
     def init_value(self, force_value, default):
-        found = -1
-        if default:
-            if 'id' in default:
-                found = self._set_active(0, default['id'])
-            else:
-                found = self._set_active(1, default['string'])
         self._value = None
-        if force_value:
-            if found > -1:
-                self._value = self._list_values[found]
+        found = self._find_value(default)
+        if found == -1 and self._has_entry:
+            text = ''
+            if default:
+                text = default['string']
+            entry = Gtk.Bin.get_child(self._combo)
+            entry.set_text(text)
+            if force_value and default:
+                self._value = [None, text]
+                return
+        if force_value and found > -1:
+            self._value = self._list_values[found]
+        self._combo.set_active(found)
 
     def on_change(self):
         if not super(PropertyList, self).on_change():
             return False
+
         active = self._combo.get_active()
+        if self._has_entry and active == -1:
+            text = self._combo.get_active_text()
+            found = self._find_value({'string': text})
+            self._combo.set_active(found)
+            if found == -1:
+                self._value = [None, text]
+                self.has_changed()
+                return True
+            else:
+                active = found
+
         if active == -1:
             self._value = None
         else:
@@ -602,7 +629,16 @@ class PropertyList(PropertyGridProperty):
         self._display_widget._main_label.set_text(
             self._value[1])
 
-    def _set_active(self, index, value):
+    def _find_value(self, value):
+        found = -1
+        if value:
+            if 'id' in value:
+                found = self._find_value_2(0, value['id'])
+            else:
+                found = self._find_value_2(1, value['string'])
+        return found
+
+    def _find_value_2(self, index, value):
         found = False
         found_index = 0
         for l in self._list_values:
@@ -610,11 +646,10 @@ class PropertyList(PropertyGridProperty):
                 found = True
                 break
             found_index += 1
-        if found:
-            self._combo.set_active(found_index)
-        else:
-            self._combo.set_active(-1)
+
+        if not found:
             found_index = -1
+
         return found_index
 
     def _on_combo_changed(self, wg):

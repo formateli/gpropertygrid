@@ -128,8 +128,33 @@ class PropertyGridExample(Gtk.Window):
                     force_value=True,
                     description="This is a list property 2 with default")
 
+        list_property3 = PropertyList(
+                    name="List 3",
+                    list_values=list_values,
+                    with_entry=True,
+                    description="This is a list property 3 with entry")
+
+        list_property4 = PropertyList(
+                    name="List 4",
+                    list_values=list_values,
+                    with_entry=True,
+                    default={'string': 'XXX'},
+                    force_value=True,
+                    description="This is a list property 4 with entry")
+
+        list_property5 = PropertyList(
+                    name="List 5",
+                    list_values=list_values,
+                    with_entry=True,
+                    default={'string': 'Element 2'},
+                    force_value=True,
+                    description="This is a list property 5 with entry")
+
         other_group.add_property(list_property1)
         other_group.add_property(list_property2)
+        other_group.add_property(list_property3)
+        other_group.add_property(list_property4)
+        other_group.add_property(list_property5)
 
         box.pack_start(pg, True, True, 0)
 

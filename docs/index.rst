@@ -8,7 +8,7 @@ Python Gtk 3 property grid widget.
 
 The main goal is to create a property grid based
 on existing Gtk widgets, and an easy way
-to set and retrieve properties values.
+to set and retrieve property values.
 
 It is created by Fredy Ramirez at Formateli_ and 
 released under GPL v3 license for free usage.
@@ -22,7 +22,7 @@ Features
 * Gtk 3 widget.
 * Runs on Python 2 or 3
 * Uses current environment theme.
-* Retrieves properties values while changing.
+* Retrieves property values while changing.
 * Open source (GPL v3 license).
 
 
@@ -33,6 +33,7 @@ Contents:
    
    usage
    install
+   changelog
 
 
 Indices and tables

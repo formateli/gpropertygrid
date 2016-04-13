@@ -12,7 +12,7 @@ from . propertygrid import PropertyGrid
 PROJECT_NAME = "GPropertyGrid"
 AUTHOR = "Fredy Ramirez"
 COPYRIGHT = "2014-2016, Fredy Ramirez - http://www.formateli.com"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 
 def get_rgb_string(rgb):

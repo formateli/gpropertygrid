@@ -112,11 +112,11 @@ We can retrieve property values in one of two ways:
 
     # Using the get_property_by_id function
     color = pg.get_property_by_id('color')
-    print(color.value)
+    print(color.value[0])
 
     # Or using the properties list
     for pr in pg.properties:
-        print(pr.value)
+        print(pr.value[0])
 
 * Using the 'changed' signal of the property grid::
     
@@ -127,7 +127,7 @@ We can retrieve property values in one of two ways:
     def on_change_pg(self, grid, property_):
         text = "Property '{0}' has changed. New value: {1}".format(
                 property_.name,
-                property_.value)
+                property_.value[0])
         print(text)
 
 
@@ -137,6 +137,7 @@ Properties implemented
 Currently GPropertyGrid has implemented the following properties:
 
 * :py:class:`PropertyString <gpropertygrid.properties.PropertyString>`
+* :py:class:`PropertyStringMultiline <gpropertygrid.properties.PropertyStringMultiline>`
 * :py:class:`PropertyBool <gpropertygrid.properties.PropertyBool>`
 * :py:class:`PropertyColor <gpropertygrid.properties.PropertyColor>`
 * :py:class:`PropertyList <gpropertygrid.properties.PropertyList>`
@@ -144,15 +145,16 @@ Currently GPropertyGrid has implemented the following properties:
 We expect to extend this list in new realeases.
 
 
-Creating a new Property
------------------------
+Extending Property classes
+--------------------------
 
-New properties can be created deriving from 
-:py:class:`PropertyGridProperty <gpropertygrid.properties.PropertyGridProperty>` class.
+Properties can be extended deriving from 
+:py:class:`PropertyGridProperty <gpropertygrid.properties.PropertyGridProperty>` class 
+or any of its subclasses.
 
 Take care of following when creating a new porperty class:
 
-* The ``do_force_value`` function must be overriden. This way we indicate how default value must be treated at creation time.
+* The ``init_value`` function must be overriden. This way we indicate how default value must be treated at creation time.
 * The ``on_change`` function must be extended. This way we can tell to property grid that value has changed.
 * In special cases ``update_display_value`` function can be overriden if property need a custom display representation.
 

@@ -10,15 +10,15 @@ class PropertyGridProperty(Gtk.Paned):
             self, name,
             value_widget,
             id=None,
-            default=None,
             description=None,
+            default=None,
             force_value=False):
         """Main property class from where all property classes must derives.
 
         Args:
             name (string): The name of the property.
 
-            value_widget (gtk widget): The widget used for manages
+            value_widget (Gtk.Widget): The widget used for manages
                 the property value.
 
             id (string): Optional. The id of the property.
@@ -28,13 +28,16 @@ class PropertyGridProperty(Gtk.Paned):
                 get_property_by_id function.
                 Default None.
 
-            default: Optional. The default value for this property.
+            description (string): Optional.
+                The property description. Default None.
 
-            description (string): Optional. The property description.
+            default: Optional. The default value for this property.
+                Default None.
 
             force_value (boolean): Optional. If True, default is asigned
                 to the property value at object creation time,
                 otherwise value remains None until it changes by user.
+                Default False.
         """
 
         super(PropertyGridProperty, self).__init__(
@@ -51,7 +54,7 @@ class PropertyGridProperty(Gtk.Paned):
         self._has_focus = False
         self._read_only = False
 
-        self.do_force_value(force_value, default)
+        self.init_value(force_value, default)
 
         self._name_widget = self._get_display_widget(0)
         self._name_widget._main_label.set_text(name)
@@ -71,17 +74,17 @@ class PropertyGridProperty(Gtk.Paned):
     @property
     def value(self):
         """
-        The current value of the property.
+        List that contents current value of property.
         """
         return self._value
 
-    def do_force_value(self, force_value, default):
-        """Forces default value at property creation time.
+    def init_value(self, force_value, default):
+        """Sets the initial state of property value at creation time.
 
-        This method is called when property object is created,
+        This method is called automatically when property is created,
         It is a virtual method, so each property must override it.
 
-        It verify the default value and if it has to be forced to
+        It verifies the default value and if it has to be forced to
         get a value, and set the value_widget.
 
         Args:
@@ -89,7 +92,7 @@ class PropertyGridProperty(Gtk.Paned):
 
             default: Default value to set if force_value is True.
         """
-        error = "do_force_value() function must be defined for property '{0}'"
+        error = "init_value() function must be defined for property '{0}'"
         raise NotImplementedError(error.format(
                 self.__class__.__name__))
 
@@ -104,7 +107,7 @@ class PropertyGridProperty(Gtk.Paned):
         if self._value is None:
             text = '[No value]'
         else:
-            text = str(self._value)
+            text = str(self._value[0])
         self._display_widget._main_label.set_text(text)
 
     def has_changed(self):
@@ -117,10 +120,10 @@ class PropertyGridProperty(Gtk.Paned):
         self.update_display_value()
 
     def set_read_only(self, readonly):
-        """Sets ReadOnly state of the property.
+        """Sets Read only state of the property.
 
         Args:
-            readonly (boolean): Value that sets the ReadOnly state.
+            readonly (boolean): Value that sets the read only state.
         """
         self._read_only = readonly
         self._display_widget._main_label.set_selectable(readonly)
@@ -243,9 +246,9 @@ class PropertyString(PropertyGridProperty):
             description=description,
             force_value=force_value)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         if default is not None and force_value:
-            self._value = default
+            self._value = [default, ]
         if default is None:
             default = ''
         self._txt.set_text(default)
@@ -253,12 +256,121 @@ class PropertyString(PropertyGridProperty):
     def on_change(self):
         if not super(PropertyString, self).on_change():
             return False
-        self._value = self._txt.get_text()
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = self._txt.get_text()
         self.has_changed()
         return True
 
     def _on_txt_changed(self, wg):
         self.on_change()
+
+
+class PropertyStringMultiline(PropertyGridProperty):
+    class _DialogMultiline(Gtk.Dialog):
+        def __init__(self, parent, text):
+            super(PropertyStringMultiline._DialogMultiline, self).__init__(
+                'Multiline string', parent, 0,
+                (
+                    Gtk.STOCK_CANCEL,
+                    Gtk.ResponseType.CANCEL,
+                    Gtk.STOCK_OK, Gtk.ResponseType.OK
+                ))
+
+            self.set_modal(True)
+            self.set_default_size(300, 300)
+
+            text_view = Gtk.TextView()
+            self._buffer = text_view.get_buffer()
+            if text is not None:
+                self._buffer.set_text(text)
+
+            sw = Gtk.ScrolledWindow()
+            sw.set_shadow_type(Gtk.ShadowType.IN)
+            sw.add(text_view)
+
+            box = self.get_content_area()
+            box.pack_start(sw, True, True, 0)
+            self.show_all()
+
+        def get_text(self):
+            return self._buffer.get_text(
+                self._buffer.get_start_iter(),
+                self._buffer.get_end_iter(),
+                True)
+
+    def __init__(
+            self,
+            name,
+            parent_window,
+            id=None,
+            default=None,
+            description=None,
+            force_value=False):
+        """A property that manages multiline string.
+
+        Value is a string or None.
+
+        See :class:`PropertyGridProperty` for parameters.
+
+        Args:
+            parent_window (Gtk.Window): The parent window.
+
+        Note:
+            *default* parameter must be a valid string object.
+        """
+        self._window = parent_window
+
+        hbox = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL)
+
+        self._label = Gtk.Label(xalign=0)
+        self._label.set_single_line_mode(True)
+        self._label.set_ellipsize(Pango.EllipsizeMode.END)
+        self._button = Gtk.Button.new_with_label('...')
+        self._button.connect("clicked", self._on_click_button)
+
+        hbox.pack_start(self._label, True, True, 0)
+        hbox.pack_start(self._button, True, True, 0)
+
+        self._default = default
+
+        super(PropertyStringMultiline, self).__init__(
+            name=name,
+            value_widget=hbox,
+            id=id,
+            default=default,
+            description=description,
+            force_value=force_value)
+
+    def init_value(self, force_value, default):
+        if default is not None:
+            self._label.set_text(default)
+            if force_value:
+                self._value = [default, ]
+
+    def on_change(self, txt):
+        if not super(PropertyStringMultiline, self).on_change():
+            return False
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = txt
+        self._label.set_text(txt)
+        self.has_changed()
+        return True
+
+    def _on_click_button(self, btn):
+        txt = None
+        if self._value is not None:
+            txt = self._value[0]
+        elif self._default is not None:
+            txt = self._default
+        dialog = PropertyStringMultiline._DialogMultiline(
+            self._window, txt)
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            self.on_change(dialog.get_text())
+        dialog.destroy()
 
 
 class PropertyBool(PropertyGridProperty):
@@ -283,19 +395,18 @@ class PropertyBool(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
+    def init_value(self, force_value, default):
         if default is True:
             self._check.set_active(True)
-
-    def do_force_value(self, force_value, default):
-        if default and force_value:
-            self._value = default
-        if default is True:
-            self._check.set_active(True)
+            if force_value:
+                self._value = [default, ]
 
     def on_change(self):
         if not super(PropertyBool, self).on_change():
             return False
-        self._value = self._check.get_active()
+        if self._value is None:
+            self._value = [None, ]
+        self._value[0] = self._check.get_active()
         self.has_changed()
         return True
 
@@ -352,36 +463,36 @@ class PropertyColor(PropertyGridProperty):
         self._display_widget.box.reorder_child(self._color_label, 0)
         self._display_widget.box.connect("draw", self._on_draw_color_display)
 
-    def on_change(self):
-        if not super(PropertyColor, self).on_change():
-            return False
-
-        color = self._get_color_from_str(self._txt.get_text())
-        if color:
-            self._buttom.set_rgba(color)
-            self._value = self._buttom.get_rgba()
-        else:
-            self._buttom.set_rgba(Gdk.RGBA())
-            self._value = None
-        self.has_changed()
-        return True
-
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         color = self._get_color_from_str(default)
         if color:
             if force_value:
-                self._value = color
+                self._value = [color, ]
             self._buttom.set_rgba(color)
             self._txt.set_text(default)
         else:
             self._txt.set_text('')
 
+    def on_change(self):
+        if not super(PropertyColor, self).on_change():
+            return False
+        if self._value is None:
+            self._value = [None, ]
+        color = self._get_color_from_str(self._txt.get_text())
+        if color:
+            self._buttom.set_rgba(color)
+            self._value[0] = self._buttom.get_rgba()
+        else:
+            self._buttom.set_rgba(Gdk.RGBA())
+            self._value[0] = None
+        self.has_changed()
+        return True
+
     def update_display_value(self):
         ctx = self._color_label.get_style_context()
-
-        if self._value is None:
+        ctx.remove_class('color_label')
+        if self._value is None or self._value[0] is None:
             super(PropertyColor, self).update_display_value()
-            ctx.remove_class('color_label')
             return
 
         self._display_widget._main_label.set_text(
@@ -431,16 +542,18 @@ class PropertyList(PropertyGridProperty):
         Args:
             list_values (list): List of values to display.
                 Its format is as follow:
-                [
-                    [id_0, string_0],
-                    [id_1, string_1],
-                    [id_n, string_n],
-                ]
+                ::
+                    [
+                        [id_0, string_0],
+                        [id_1, string_1],
+                        [id_n, string_n],
+                    ]
+
                 string_n is the string to show in the dropdown menu and
-                id_n is its id, it can be None if it is not necessary.
+                id_n is its id, id can be None if it is not necessary.
 
         Note:
-            *default* parameter must a dictionary of one element,
+            *default* parameter must be a dictionary of one element,
             where key can be 'id' or 'string'.
             Ex: {'id': '5'} select the element in the dropdown with id='5'.
             {'string': 'Hello world'} select the element in the dropdown
@@ -459,14 +572,14 @@ class PropertyList(PropertyGridProperty):
                 id=id, default=default, description=description,
                 force_value=force_value)
 
-    def do_force_value(self, force_value, default):
+    def init_value(self, force_value, default):
         found = -1
         if default:
             if 'id' in default:
                 found = self._set_active(0, default['id'])
             else:
                 found = self._set_active(1, default['string'])
-        self._value is None
+        self._value = None
         if force_value:
             if found > -1:
                 self._value = self._list_values[found]

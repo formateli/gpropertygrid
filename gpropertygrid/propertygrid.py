@@ -19,8 +19,14 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         Args:
             title (string): The title of the property grid.
 
-        Signals:
-            **changed**: Emited when a property object changes.
+        **Signals:**
+            **changed**: Emited when a value of a property in the
+                property grid changes.
+
+            **Parameters:**
+                **propertygrid:** The property grid that emits the signal.
+
+                **property:** The property object that has changed.
         """
 
         Gtk.Box.__init__(
@@ -117,10 +123,10 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
         return self._property_names[id]
 
     def set_expanded(self, expanded):
-        """Sets the expanded state of the group.
+        """Sets the expanded state of the property grid.
 
         Args:
-            expanded (boolean): If True, group expands to show
+            expanded (boolean): If True, grid expands to show
                 its properties.
         """
         for g in self._groups:
@@ -164,7 +170,9 @@ class PropertyGrid(Gtk.Box, GObject.GObject):
 
 class PropertyGridGroup(Gtk.Expander):
     def __init__(self, title):
-        """Manages a group of :class:`PropertyGridProperty` objects.
+        """Manages a group of
+        :py:class:`Property <gpropertygrid.properties.PropertyGridProperty>`
+        objects.
 
         Args:
             title (string): The title of the group.
@@ -187,23 +195,26 @@ class PropertyGridGroup(Gtk.Expander):
     @property
     def grid(self):
         """
-        PropertyGrid object owner of the group. Read only.
+        :class:`PropertyGrid` object owner of the group. Read only.
         """
         return self._grid
 
     @property
     def properties(self):
         """
-        Read only. List of PropertyGridProperty objects
-        that belongs to group.
+        List of
+        :py:class:`Property <gpropertygrid.properties.PropertyGridProperty>`
+        objects that belongs to group. Read only.
         """
         return self._properties
 
     def add_property(self, property_):
-        """Adds a PropertyGridProperty object to this group.
+        """Adds a
+        :py:class:`Property <gpropertygrid.properties.PropertyGridProperty>`
+        object to this group.
 
         Args:
-            property_: A PropertyGridProperty object.
+            property_ (PropertyGridProperty): A Property object.
         """
         if not self._grid:
             raise ValueError(

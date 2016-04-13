@@ -6,6 +6,7 @@ import unittest
 from gpropertygrid import PropertyGrid
 from gpropertygrid.propertygrid import PropertyGridGroup
 
+
 class PropertygridTest(unittest.TestCase):
     def testPropertygrid(self):
         pg = PropertyGrid('Property Grid Test')
@@ -15,4 +16,3 @@ class PropertygridTest(unittest.TestCase):
 
         grp = pg.create_group('Group 1')
         self.assertEqual(True, isinstance(grp, PropertyGridGroup))
-

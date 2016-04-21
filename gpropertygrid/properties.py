@@ -251,7 +251,7 @@ class PropertyString(PropertyGridProperty):
             self._value = [default, ]
         if default is None:
             default = ''
-        self._txt.set_text(default)
+        self._txt.set_text(str(default))
 
     def on_change(self):
         if not super(PropertyString, self).on_change():
@@ -590,6 +590,8 @@ class PropertyList(PropertyGridProperty):
             text = ''
             if default:
                 text = default['string']
+                if text is None:
+                    text = ''
             entry = Gtk.Bin.get_child(self._combo)
             entry.set_text(text)
             if force_value and default:
